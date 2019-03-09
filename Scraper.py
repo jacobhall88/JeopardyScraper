@@ -16,6 +16,19 @@ while gamecount < finalcount:
     categories = content.findAll('td', attrs={"class": "category_name"})
     count = 1
     cat_dict = {}
+    round = 0
+
+    show = content.find('div', attrs={"id": "game_title"})
+    show = show.text.split("Show #")
+    if len(show) > 1:
+        show2 = show[1].split(" - ")
+        if len(show2) > 1:
+            show = show2[0]
+        else:
+            show = "Special"
+    else:
+        show = "Special"
+
 
     for category in categories:
         category_str = category.text
@@ -34,6 +47,7 @@ while gamecount < finalcount:
         double = False
         final = False
         valid = True
+
         question = table.find('div', attrs={"onmouseover": re.compile("toggle*")})
         if question is not None:
             question_str = str(question)
@@ -51,6 +65,7 @@ while gamecount < finalcount:
 
             else:
                 value = "Final Jeopardy"
+                round = "Final"
 
             if final is False:
                 answerSplit1 = question_str.split("correct_response&quot;&gt;")
@@ -68,6 +83,14 @@ while gamecount < finalcount:
             if valid:
                 answer = answerSplit2[0]
 
+            if valid and not final:
+                roundSplit1 = question_str.split("toggle('clue_")
+                if len(roundSplit1) > 1:
+                    roundSplit2 = roundSplit1[1].split("_")
+                    if roundSplit2[0] == "J":
+                        round = 1
+                    if roundSplit2[0] == "DJ":
+                        round = 2
 
             if valid:
                 cluetext = table.find('td', attrs={"class": "clue_text"})
@@ -85,7 +108,7 @@ while gamecount < finalcount:
                     cat = category.text
 
             if valid:
-                append_tup = (clue, answer, value)
+                append_tup = ("clue: " + clue, "answer: " + answer, "value: " + str(value), "round: " + str(round), "show: " + str(show))
                 if cat in json_dict.keys():
                     if append_tup not in json_dict[cat]:
                         json_dict[cat].append(append_tup)
